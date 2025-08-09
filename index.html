@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soft Launching</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    /* Halaman Utama */
+    .main-page {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        background-image: url('/landscape.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Button Launch */
+    .launch-button {
+        position: relative;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 20px 40px;
+        border-radius: 50px;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .launch-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .launch-button:active {
+        transform: translateY(0);
+    }
+
+    /* Halaman Video */
+    .video-page {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    /* Video Container */
+    .video-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .video-container video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        /* Hilangkan semua kontrol dan UI video */
+        outline: none;
+        border: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* Hilangkan semua kontrol video di semua browser */
+    .video-container video::-webkit-media-controls {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-panel {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-play-button {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-start-playback-button {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-timeline {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-current-time-display {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-time-remaining-display {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-mute-button {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-volume-slider {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-fullscreen-button {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-overlay-play-button {
+        display: none !important;
+    }
+
+    /* Firefox controls */
+    .video-container video::-moz-media-controls {
+        display: none !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .launch-button {
+            padding: 15px 30px;
+            font-size: 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .launch-button {
+            padding: 12px 25px;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+    }
+
+    /* Untuk layar sangat besar (Video Tron) */
+    @media (min-width: 1920px) {
+        .launch-button {
+            padding: 30px 60px;
+            font-size: 32px;
+            border-radius: 60px;
+        }
+    }
+
+    @media (min-width: 3840px) {
+        .launch-button {
+            padding: 40px 80px;
+            font-size: 48px;
+            border-radius: 80px;
+        }
+    }
+
+    /* Animation untuk transisi */
+    .fade-out {
+        animation: fadeOut 0.5s ease-in-out forwards;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <!-- Halaman Utama -->
+    <div class="main-page" id="mainPage">
+        <button class="launch-button" id="launchBtn">
+            Launch
+        </button>
+    </div>
+
+    <!-- Halaman Video -->
+    <div class="video-page" id="videoPage">
+        <div class="video-container">
+            <video id="launchVideo" preload="metadata" muted playsinline webkit-playsinline controls="false"
+                disablePictureInPicture="true" controlsList="nodownload nofullscreen noremoteplayback"
+                oncontextmenu="return false;" style="pointer-events: none;">
+                <source src="/landscape.mp4" type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const launchBtn = document.getElementById('launchBtn');
+        const mainPage = document.getElementById('mainPage');
+        const videoPage = document.getElementById('videoPage');
+        const video = document.getElementById('launchVideo');
+
+        // Preload dan setup video
+        video.load();
+
+        // Pastikan video benar-benar tanpa kontrol
+        video.controls = false;
+        video.setAttribute('controls', false);
+        video.setAttribute('disablePictureInPicture', true);
+        video.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
+
+        // Disable semua event yang bisa memunculkan kontrol
+        video.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('keydown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        // Event listener untuk button launch
+        launchBtn.addEventListener('click', function() {
+            // Fade out halaman utama
+            mainPage.classList.add('fade-out');
+
+            setTimeout(function() {
+                // Sembunyikan halaman utama
+                mainPage.style.display = 'none';
+
+                // Tampilkan halaman video
+                videoPage.style.display = 'flex';
+                videoPage.classList.add('fade-in');
+
+                // Play video dengan error handling
+                const playPromise = video.play();
+
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Video started playing successfully
+                        console.log('Video playing successfully');
+                    }).catch(error => {
+                        // Auto play failed, try again
+                        console.log('Autoplay prevented, attempting again...');
+                        setTimeout(() => {
+                            video.play();
+                        }, 100);
+                    });
+                }
+            }, 500);
+        });
+
+        // Error handling untuk video
+        video.addEventListener('error', function(e) {
+            console.log('Video error occurred:', e);
+            // Fallback: tetap tampilkan halaman video meski error
+        });
+
+        // Event ketika video siap
+        video.addEventListener('loadeddata', function() {
+            console.log('Video loaded and ready');
+        });
+
+        // Disable right-click pada video
+        video.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+    });
+
+    // Prevent context menu (right click)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // Prevent text selection
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
+    </script>
+</body>
+
+</html>
